@@ -1,8 +1,16 @@
 #!/bin/bash
+
+# Add qemu  dir 
+if test -e /etc/libvirt/ && ! test -e /etc/libvirt/hooks;
+then
+   mkdir -p /etc/libvirt/hooks;
+fi
+
 if test -e /etc/libvirt/hooks/qemu;
 then
     mv /etc/libvirt/hooks/qemu /etc/libvirt/hooks/qemu_last_backup
 fi
+
 if test -e /bin/vfio-startup.sh;
 then
     mv /bin/vfio-startup.sh /bin/vfio-startup.sh.bkp
