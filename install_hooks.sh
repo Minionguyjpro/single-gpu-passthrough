@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Add qemu  dir 
+# Add hooks  dir 
 if test -e /etc/libvirt/ && ! test -e /etc/libvirt/hooks;
 then
    mkdir -p /etc/libvirt/hooks;
