@@ -1,31 +1,48 @@
 #!/bin/bash
 
-if test -e /etc/libvirt/ && ! test -e /etc/libvirt/hooks;
-then
-   mkdir -p /etc/libvirt/hooks;
-fi
-if test -e /etc/libvirt/hooks/qemu;
-then
-    mv /etc/libvirt/hooks/qemu /etc/libvirt/hooks/qemu_last_backup
-fi
-if test -e /bin/vfio-startup.sh;
-then
-    mv /bin/vfio-startup.sh /bin/vfio-startup.sh.bkp
-fi
-if test -e /bin/vfio-teardown.sh;
-then
-    mv /bin/vfio-teardown.sh /bin/vfio-teardown.sh.bkp
-fi
-if test -e /etc/systemd/system/libvirt-nosleep@.service;
-then
-    rm /etc/systemd/system/libvirt-nosleep@.service
+# Ensure libvirtd is installed
+if [[ ! -d /etc/libvirt/ ]]; then
+  echo "\"/etc/libvirt/\" doesn't exist!"
+  echo "Make sure you have libvirtd installed!"
+  exit 1
 fi
 
-cp systemd-no-sleep/libvirt-nosleep@.service /etc/systemd/system/libvirt-nosleep@.service
-cp hooks/vfio-startup.sh /bin/vfio-startup.sh
-cp hooks/vfio-teardown.sh /bin/vfio-teardown.sh
-cp hooks/qemu /etc/libvirt/hooks/qemu
+# Change these if you want
+HOOKS_DIR=/etc/libvirt/hooks
+SCRIPTS_DIR=/usr/local/share/single-gpu-passthrough
 
-chmod +x /bin/vfio-startup.sh
-chmod +x /bin/vfio-teardown.sh
-chmod +x /etc/libvirt/hooks/qemu
+# Helper stuff
+function install_file() {
+  if [[ $# -ne 2 ]]; then
+    echo "install_file expects 2 arguments!"
+
+    return 1
+  fi
+
+  local source="$1"
+  local target="$2"
+
+  # Ensure target is a file
+  [[ -d "$target" ]] && target="$target/$(basename "$source")"
+
+  if [[ -f "$target" ]]; then
+    mv -f "$target" "$target.old"
+    chmod -x "$target.old"
+  fi
+
+  sed -e "s%@HOOKS_DIR@%$HOOKS_DIR%g" -e "s%@SCRIPTS_DIR@%$SCRIPTS_DIR%g" "$source" >"$target"
+  chmod +x "$target"
+}
+
+# Create all necessary dirs
+mkdir -p /etc/libvirt/hooks
+mkdir -p /usr/local/share/single-gpu-passthrough
+
+# Install files
+install_file hooks/vfio-startup.sh "$SCRIPTS_DIR"
+install_file hooks/vfio-teardown.sh "$SCRIPTS_DIR"
+install_file hooks/qemu "$HOOKS_DIR"
+
+# Setup systemd service
+cp -f systemd-no-sleep/libvirt-nosleep@.service /etc/systemd/system/libvirt-nosleep@.service
+systemctl daemon-reload
