@@ -45,7 +45,6 @@ function stop_display_manager_if_running {
     if systemctl is-active --quiet "$DISPMGR.service"; then
       echo "$DISPMGR" >/tmp/vfio-store-display-manager
       systemctl stop "$DISPMGR.service"
-      systemctl isolate multi-user.target
     fi
   else
     log "Distro is not using Systemd, can't stop display manager"
