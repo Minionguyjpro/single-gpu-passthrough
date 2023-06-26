@@ -7,7 +7,7 @@ if [[ "$OBJECT" == "@VM_NAME@" ]]; then
   case "$OPERATION" in
   "prepare")
     systemctl start libvirt-nosleep@"$OBJECT" 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
-    "@SCRIPTS_DIR@vfio-startup.sh" 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+    "@SCRIPTS_DIR@/vfio-startup.sh" 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
     ;;
 
   "release")
