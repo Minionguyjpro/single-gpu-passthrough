@@ -80,10 +80,6 @@ while read -r DISPMGR; do
     log "Var has been collected from file: $DISPMGR"
 
     systemctl start "$DISPMGR.service"
-  else
-    if command -v sv; then
-      sv start "$DISPMGR"
-    fi
   fi
 done </tmp/vfio-store-display-manager
 
