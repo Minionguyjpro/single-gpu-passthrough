@@ -34,33 +34,31 @@ modprobe -r vfio_pci
 modprobe -r vfio_iommu_type1
 modprobe -r vfio
 
-if grep -q "true" "/tmp/vfio-is-nvidia" ; then
+if grep -q "true" "/tmp/vfio-is-nvidia"; then
+  ## Load NVIDIA drivers ##
+  echo "$DATE Loading NVIDIA GPU Drivers"
 
-    ## Load NVIDIA drivers ##
-    echo "$DATE Loading NVIDIA GPU Drivers"
-    
-    modprobe drm
-    modprobe drm_kms_helper
-    modprobe i2c_nvidia_gpu
-    modprobe nvidia
-    modprobe nvidia_modeset
-    modprobe nvidia_drm
-    modprobe nvidia_uvm
+  modprobe drm
+  modprobe drm_kms_helper
+  modprobe i2c_nvidia_gpu
+  modprobe nvidia
+  modprobe nvidia_modeset
+  modprobe nvidia_drm
+  modprobe nvidia_uvm
 
-    echo "$DATE NVIDIA GPU Drivers Loaded"
+  echo "$DATE NVIDIA GPU Drivers Loaded"
 fi
 
-if  grep -q "true" "/tmp/vfio-is-amd" ; then
+if grep -q "true" "/tmp/vfio-is-amd"; then
+  ## Load NVIDIA drivers ##
+  echo "$DATE Loading AMD GPU Drivers"
 
-    ## Load NVIDIA drivers ##
-    echo "$DATE Loading AMD GPU Drivers"
-    
-    modprobe drm
-    modprobe amdgpu
-    modprobe radeon
-    modprobe drm_kms_helper
-    
-    echo "$DATE AMD GPU Drivers Loaded"
+  modprobe drm
+  modprobe amdgpu
+  modprobe radeon
+  modprobe drm_kms_helper
+
+  echo "$DATE AMD GPU Drivers Loaded"
 fi
 
 ## Restart Display Manager ##
@@ -78,7 +76,7 @@ while read -r DISPMGR; do
       sv start "$DISPMGR"
     fi
   fi
-done < "$input"
+done <"$input"
 
 ############################################################################################################
 ## Rebind VT consoles (adapted and modernised from https://www.kernel.org/doc/Documentation/fb/fbcon.txt) ##
@@ -87,13 +85,12 @@ done < "$input"
 input="/tmp/vfio-bound-consoles"
 while read -r consoleNumber; do
   if test -x /sys/class/vtconsole/vtcon"${consoleNumber}"; then
-      if [ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" \
-           = 1 ]; then
-    echo "$DATE Rebinding console ${consoleNumber}"
-	  echo 1 > /sys/class/vtconsole/vtcon"${consoleNumber}"/bind
-      fi
+    if [ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" \
+      = 1 ]; then
+      echo "$DATE Rebinding console ${consoleNumber}"
+      echo 1 >/sys/class/vtconsole/vtcon"${consoleNumber}"/bind
+    fi
   fi
-done < "$input"
-
+done <"$input"
 
 echo "$DATE End of Teardown!"
