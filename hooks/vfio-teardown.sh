@@ -15,28 +15,38 @@
 ## Void for testing and helping out in general     ## ##                   ##
 ## .Chris. for testing and helping out in general  ## ## Run this command  ##
 ## WORMS for helping out with testing              ## ## if you dont have  ##
-##################################################### ## names in you're   ##
-## The VFIO community for using the scripts and    ## ## lspci feedback    ##
-## testing them for us!                            ## ## in your terminal  ##
+## BrainStone for general script cleanup           ## ## names in you're   ##
+##################################################### ## lspci feedback    ##
+## The VFIO community for using the scripts and    ## ## in your terminal  ##
+## testing them for us!                            ## ##                   ##
 ##################################################### #######################
 
 ################################# Variables #################################
 
 ## Adds current time to var for use in echo for a cleaner log and script ##
-DATE=$(date +"%m/%d/%Y %R:%S :")
+DATE_FORMAT="%Y-%m-%d %R:%S"
+
+################################# Functions #################################
+
+# Log message with timestamp
+function log() {
+  echo "$(date +"$DATE_FORMAT") : $*"
+}
 
 ################################## Script ###################################
 
-echo "$DATE Beginning of Teardown!"
+log "Beginning of Teardown!"
 
+############################
 ## Unload VFIO-PCI driver ##
+############################
 modprobe -r vfio_pci
 modprobe -r vfio_iommu_type1
 modprobe -r vfio
 
-if grep -q "true" "/tmp/vfio-is-nvidia"; then
+if grep -q "nvidia" "/tmp/vfio-gpu-type"; then
   ## Load NVIDIA drivers ##
-  echo "$DATE Loading NVIDIA GPU Drivers"
+  log "Loading NVIDIA GPU Drivers"
 
   modprobe drm
   modprobe drm_kms_helper
@@ -46,51 +56,47 @@ if grep -q "true" "/tmp/vfio-is-nvidia"; then
   modprobe nvidia_drm
   modprobe nvidia_uvm
 
-  echo "$DATE NVIDIA GPU Drivers Loaded"
+  log "NVIDIA GPU Drivers Loaded"
 fi
 
-if grep -q "true" "/tmp/vfio-is-amd"; then
-  ## Load NVIDIA drivers ##
-  echo "$DATE Loading AMD GPU Drivers"
+if grep -q "amd" "/tmp/vfio-gpu-type"; then
+  ## Load AMD drivers ##
+  log "Loading AMD GPU Drivers"
 
   modprobe drm
   modprobe amdgpu
   modprobe radeon
   modprobe drm_kms_helper
 
-  echo "$DATE AMD GPU Drivers Loaded"
+  log "AMD GPU Drivers Loaded"
 fi
 
+#############################
 ## Restart Display Manager ##
-input="/tmp/vfio-store-display-manager"
+#############################
 while read -r DISPMGR; do
-  if command -v systemctl; then
-
+  if [[ -d /run/systemd/system ]]; then
     ## Make sure the variable got collected ##
-    echo "$DATE Var has been collected from file: $DISPMGR"
+    log "Var has been collected from file: $DISPMGR"
 
     systemctl start "$DISPMGR.service"
-
   else
     if command -v sv; then
       sv start "$DISPMGR"
     fi
   fi
-done <"$input"
+done </tmp/vfio-store-display-manager
 
 ############################################################################################################
 ## Rebind VT consoles (adapted and modernised from https://www.kernel.org/doc/Documentation/fb/fbcon.txt) ##
 ############################################################################################################
-
-input="/tmp/vfio-bound-consoles"
 while read -r consoleNumber; do
-  if test -x /sys/class/vtconsole/vtcon"${consoleNumber}"; then
-    if [ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" \
-      = 1 ]; then
-      echo "$DATE Rebinding console ${consoleNumber}"
-      echo 1 >/sys/class/vtconsole/vtcon"${consoleNumber}"/bind
+  if [[ -d "/sys/class/vtconsole/vtcon${consoleNumber}" ]]; then
+    if [[ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
+      log "Rebinding console ${consoleNumber}"
+      echo 1 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
     fi
   fi
-done <"$input"
+done </tmp/vfio-bound-consoles
 
-echo "$DATE End of Teardown!"
+log "End of Teardown!"
