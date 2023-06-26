@@ -13,3 +13,5 @@ rm -f \
 # Remove systemd service
 rm -f /etc/systemd/system/libvirt-nosleep@.service
 systemctl daemon-reload
+
+echo "Uninstallation complete!"

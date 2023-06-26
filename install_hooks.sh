@@ -39,3 +39,5 @@ install_file hooks/qemu "$HOOKS_DIR"
 # Setup systemd service
 cp -f systemd-no-sleep/libvirt-nosleep@.service /etc/systemd/system/libvirt-nosleep@.service
 systemctl daemon-reload
+
+echo "Installation complete!"
