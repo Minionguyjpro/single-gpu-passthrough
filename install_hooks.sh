@@ -7,9 +7,9 @@ if [[ ! -d /etc/libvirt/ ]]; then
   exit 1
 fi
 
-# Change these if you want
-HOOKS_DIR=/etc/libvirt/hooks
-SCRIPTS_DIR=/usr/local/share/single-gpu-passthrough
+# Change to dir of script and load variables
+cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" || exit
+. install_variables.sh
 
 # Helper stuff
 function install_file() {
@@ -30,13 +30,13 @@ function install_file() {
     chmod -x "$target.old"
   fi
 
-  sed -e "s%@HOOKS_DIR@%$HOOKS_DIR%g" -e "s%@SCRIPTS_DIR@%$SCRIPTS_DIR%g" "$source" >"$target"
+  sed -e "s%@HOOKS_DIR@%$HOOKS_DIR%g" -e "s%@SCRIPTS_DIR@%$SCRIPTS_DIR%g" -e "s%@VM_NAME@%$VM_NAME%g" "$source" >"$target"
   chmod +x "$target"
 }
 
 # Create all necessary dirs
-mkdir -p /etc/libvirt/hooks
-mkdir -p /usr/local/share/single-gpu-passthrough
+mkdir -p "$HOOKS_DIR"
+mkdir -p "$SCRIPTS_DIR"
 
 # Install files
 install_file hooks/vfio-startup.sh "$SCRIPTS_DIR"
