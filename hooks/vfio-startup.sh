@@ -88,7 +88,7 @@ for ((consoleNumber = 0; consoleNumber < 16; consoleNumber++)); do
     if [[ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
       echo 0 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
       log "Unbinding Console ${consoleNumber}"
-      echo "$i" >>/tmp/vfio-bound-consoles
+      echo "$consoleNumber" >>/tmp/vfio-bound-consoles
     fi
   fi
 done
