@@ -4,6 +4,6 @@
 
 # Change these if you want
 HOOKS_DIR=/etc/libvirt/hooks
-SCRIPTS_DIR=/usr/local/share/single-gpu-passthrough
+SCRIPTS_DIR=/opt/single-gpu-passthrough
 
 VM_NAME=win10
