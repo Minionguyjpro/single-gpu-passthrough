@@ -138,4 +138,6 @@ modprobe vfio
 modprobe vfio_pci
 modprobe vfio_iommu_type1
 
+sleep 1
+
 log "End of Startup!"

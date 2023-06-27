@@ -71,6 +71,8 @@ if grep -q "amd" "/tmp/vfio-gpu-type"; then
   log "AMD GPU Drivers Loaded"
 fi
 
+sleep 1
+
 ############################################################################################################
 ## Rebind VT consoles (adapted and modernised from https://www.kernel.org/doc/Documentation/fb/fbcon.txt) ##
 ############################################################################################################
@@ -80,6 +82,8 @@ while read -r consoleNumber; do
     echo 1 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
   fi
 done </tmp/vfio-bound-consoles
+
+sleep 1
 
 #############################
 ## Restart Display Manager ##
