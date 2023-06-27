@@ -83,12 +83,10 @@ sleep 1
 : >/tmp/vfio-bound-consoles
 
 for ((consoleNumber = 0; consoleNumber < 16; consoleNumber++)); do
-  if [[ -d "/sys/class/vtconsole/vtcon${consoleNumber}" ]]; then
-    if [[ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
-      echo 0 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
-      log "Unbinding Console ${consoleNumber}"
-      echo "$consoleNumber" >>/tmp/vfio-bound-consoles
-    fi
+  if [[ -d "/sys/class/vtconsole/vtcon${consoleNumber}" && "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
+    echo 0 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
+    log "Unbinding Console ${consoleNumber}"
+    echo "$consoleNumber" >>/tmp/vfio-bound-consoles
   fi
 done
 

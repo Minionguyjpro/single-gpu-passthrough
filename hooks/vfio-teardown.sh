@@ -71,6 +71,16 @@ if grep -q "amd" "/tmp/vfio-gpu-type"; then
   log "AMD GPU Drivers Loaded"
 fi
 
+############################################################################################################
+## Rebind VT consoles (adapted and modernised from https://www.kernel.org/doc/Documentation/fb/fbcon.txt) ##
+############################################################################################################
+while read -r consoleNumber; do
+  if [[ -d "/sys/class/vtconsole/vtcon${consoleNumber}" && "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
+    log "Rebinding console ${consoleNumber}"
+    echo 1 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
+  fi
+done </tmp/vfio-bound-consoles
+
 #############################
 ## Restart Display Manager ##
 #############################
@@ -82,17 +92,5 @@ while read -r DISPMGR; do
     systemctl start "$DISPMGR.service"
   fi
 done </tmp/vfio-store-display-manager
-
-############################################################################################################
-## Rebind VT consoles (adapted and modernised from https://www.kernel.org/doc/Documentation/fb/fbcon.txt) ##
-############################################################################################################
-while read -r consoleNumber; do
-  if [[ -d "/sys/class/vtconsole/vtcon${consoleNumber}" ]]; then
-    if [[ "$(grep -c "frame buffer" "/sys/class/vtconsole/vtcon${consoleNumber}/name")" -eq 1 ]]; then
-      log "Rebinding console ${consoleNumber}"
-      echo 1 >"/sys/class/vtconsole/vtcon${consoleNumber}/bind"
-    fi
-  fi
-done </tmp/vfio-bound-consoles
 
 log "End of Teardown!"
